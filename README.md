@@ -27,4 +27,4 @@ To reduce IoT edge system downtime by replacing manual recovery
 with an automated self-healing mechanism.
 
 ## Status
-🚧 Work in progress — MSc Research Project 2025
+🚧 Work in progress — MSc Research Project 2026
