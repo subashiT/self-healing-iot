@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Greenhouse IoT Dashboard</title>
+  <style>
+    body { font-family: Arial; background: #0D1B2A; color: white; padding: 20px; }
+    h1 { color: #02C39A; }
+    .cards { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+    .card { background: #1a2f45; border-radius: 12px; padding: 20px; min-width: 160px; text-align: center; }
+    .value { font-size: 2.5em; font-weight: bold; color: #02C39A; }
+    .label { font-size: 0.9em; color: #888; margin-top: 5px; }
+    .log { background: #111; padding: 15px; border-radius: 8px; margin-top: 20px;
+           font-family: monospace; font-size: 0.85em; height: 200px; overflow-y: auto; }
+    .status { margin-top: 20px; padding: 15px; border-radius: 8px; background: #14532d; color: #86efac; }
+  </style>
+</head>
+<body>
+  <h1>🌿 Greenhouse Monitoring Dashboard</h1>
+  <p style="color:#888">Live sensor data — Self-Healing IoT Edge Framework</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="value" id="temp">--</div>
+      <div class="label">🌡 Temperature (°C)</div>
+    </div>
+    <div class="card">
+      <div class="value" id="hum">--</div>
+      <div class="label">💧 Humidity (%)</div>
+    </div>
+    <div class="card">
+      <div class="value" id="soil">--</div>
+      <div class="label">🌱 Soil Moisture (%)</div>
+    </div>
+    <div class="card">
+      <div class="value" id="light">--</div>
+      <div class="label">☀️ Light (lux)</div>
+    </div>
+  </div>
+
+  <div class="status" id="status">
+    ✅ System Status: Healthy — Self-healing active
+  </div>
+
+  <div class="log" id="log">Connecting to broker...</div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+    const logEl = document.getElementById('log');
+
+    client.on('connect', () => {
+      client.subscribe('greenhouse/subashi/sensors');
+      logEl.innerHTML = '[Connected] Waiting for data...\n';
+    });
+
+    client.on('message', (topic, message) => {
+      const msg = message.toString();
+      const parts = {};
+      msg.split(',').forEach(p => {
+        const [k, v] = p.trim().split(':');
+        parts[k.trim()] = parseFloat(v);
+      });
+
+      document.getElementById('temp').textContent = parts['Temp'] ?? '--';
+      document.getElementById('hum').textContent = parts['Humidity'] ?? '--';
+      document.getElementById('soil').textContent = parts['Soil'] ?? '--';
+      document.getElementById('light').textContent = parts['Light'] ?? '--';
+
+      const time = new Date().toLocaleTimeString();
+      logEl.innerHTML = `[${time}] ${msg}\n` + logEl.innerHTML;
+    });
+  </script>
+</body>
+</html>
